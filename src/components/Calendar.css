@@ -1,0 +1,203 @@
+.calendar-container {
+  margin: 20px auto;
+  max-width: 1200px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.rbc-calendar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.rbc-header {
+  padding: 10px 3px;
+  font-weight: 600;
+  color: #ffffff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.rbc-today {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.rbc-off-range-bg {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-time-slot {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-event {
+  background-color: #000000;
+  border-color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 0.85em;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.rbc-event:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.rbc-current-time-indicator {
+  background-color: #ffffff;
+}
+
+.rbc-toolbar button {
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.rbc-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: #000000;
+  border-color: #ffffff;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.3);
+}
+
+.rbc-toolbar-label {
+  font-weight: 600;
+  font-size: 1.1em;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.rbc-month-view {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-month-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-day-bg {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-date-cell {
+  color: #ffffff;
+}
+
+.rbc-date-cell > a {
+  color: #ffffff;
+}
+
+.rbc-day-slot .rbc-events-container {
+  margin-right: 0;
+}
+
+.rbc-day-bg {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.rbc-day-bg.rbc-today {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.rbc-day-bg.rbc-off-range-bg {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.rbc-agenda-view table {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-agenda-view table tbody > tr > td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.rbc-agenda-view table thead > tr > th {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell {
+  color: #cccccc;
+}
+
+.rbc-agenda-event-cell {
+  color: #ffffff;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-time-content {
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-time-header-gutter {
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rbc-time-slot {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rbc-day-slot .rbc-time-slot.rbc-now {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.rbc-show-more {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.rbc-show-more:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.rbc-toolbar {
+  margin-bottom: 20px;
+}
+
+.rbc-btn-group button {
+  color: #ffffff;
+}
+
+.rbc-btn-group button:active,
+.rbc-btn-group button.rbc-active {
+  background-color: #000000;
+  color: #ffffff;
+}
