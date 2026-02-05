@@ -1,9 +1,76 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import moment from 'moment';
+import { useAuth } from '../contexts/AuthContext';
+import EditEventForm from './EditEventForm';
+import { toggleGoingStatus, getGoingCountsForEvents, getGoingStatusForEvents } from '../services/eventGoingService';
 import './EventsList.css';
 
-const EventsList = ({ events }) => {
-  if (events.length === 0) {
+const EventsList = ({ events, onEventUpdate }) => {
+  const { currentUser, isAdmin } = useAuth();
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [goingStatus, setGoingStatus] = useState({});
+  const [goingCounts, setGoingCounts] = useState({});
+  const [updatingGoing, setUpdatingGoing] = useState({});
+  
+  // Filter out past events and cancelled events - only show upcoming events
+  const now = new Date();
+  const upcomingEvents = events.filter(event => {
+    const eventEnd = new Date(event.end);
+    return eventEnd >= now && !event.cancelled;
+  });
+
+  // Load going status and counts
+  useEffect(() => {
+    if (upcomingEvents.length === 0) return;
+
+    const loadGoingData = async () => {
+      try {
+        const eventIds = upcomingEvents.map(e => e.id);
+        
+        // Load going counts for all events
+        const counts = await getGoingCountsForEvents(eventIds);
+        setGoingCounts(counts);
+        
+        // Load user's going status if logged in
+        if (currentUser) {
+          const status = await getGoingStatusForEvents(eventIds, currentUser.uid);
+          setGoingStatus(status);
+        }
+      } catch (error) {
+        console.error('Error loading going data:', error);
+        // Don't block the UI if there's an error, just log it
+      }
+    };
+
+    loadGoingData();
+  }, [upcomingEvents, currentUser]);
+
+  const handleToggleGoing = async (eventId) => {
+    if (!currentUser) return;
+    
+    setUpdatingGoing(prev => ({ ...prev, [eventId]: true }));
+    try {
+      const userName = currentUser.displayName || currentUser.email || 'User';
+      const isGoing = await toggleGoingStatus(eventId, currentUser.uid, userName);
+      
+      // Update local state
+      setGoingStatus(prev => ({ ...prev, [eventId]: isGoing }));
+      
+      // Reload the actual count from database
+      const counts = await getGoingCountsForEvents([eventId]);
+      setGoingCounts(prev => ({
+        ...prev,
+        [eventId]: counts[eventId] || 0
+      }));
+    } catch (error) {
+      console.error('Error toggling going status:', error);
+      alert('Failed to update going status: ' + (error.message || 'Unknown error'));
+    } finally {
+      setUpdatingGoing(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
+
+  if (upcomingEvents.length === 0) {
     return (
       <div className="events-list-container">
         <h2>Upcoming Events</h2>
@@ -24,7 +91,7 @@ const EventsList = ({ events }) => {
     <div className="events-list-container">
       <h2>Upcoming Events</h2>
       <div className="events-list">
-        {events.map((event) => (
+        {upcomingEvents.map((event) => (
           <div key={event.id} className="event-card">
             <div className="event-date">
               <div className="event-month">{moment(event.start).format('MMM')}</div>
@@ -44,14 +111,97 @@ const EventsList = ({ events }) => {
                     {event.location}
                   </div>
                 )}
+                {(event.instagramHandle || event.instaHandle || event.eventOwner) && (
+                  <div className="event-owner">
+                    <span className="info-icon">👤</span>
+                    {event.instagramHandle || event.instaHandle ? (
+                      <a 
+                        href={event.ownerInstagram || `https://instagram.com/${event.instagramHandle || event.instaHandle}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="instagram-link"
+                      >
+                        @{event.instagramHandle || event.instaHandle}
+                        {event.eventOwner && ` (${event.eventOwner})`}
+                      </a>
+                    ) : (
+                      <span>{event.eventOwner}</span>
+                    )}
+                  </div>
+                )}
+                {event.chatUrl && (
+                  <div className="event-chat">
+                    <span className="info-icon">💬</span>
+                    <a 
+                      href={event.chatUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="chat-link"
+                    >
+                      Join Chat
+                    </a>
+                  </div>
+                )}
+                {event.partifulLink && (
+                  <div className="event-partiful">
+                    <span className="info-icon">🎉</span>
+                    <a 
+                      href={event.partifulLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="partiful-link"
+                    >
+                      View on Partiful
+                    </a>
+                  </div>
+                )}
                 {event.description && (
                   <div className="event-description">{event.description}</div>
                 )}
+                <div className="event-going-count">
+                  <span className="info-icon">👥</span>
+                  {goingCounts[event.id] || 0} {goingCounts[event.id] === 1 ? 'member' : 'members'} going
+                </div>
               </div>
+              {currentUser && (
+                <div className="event-actions">
+                  <button
+                    onClick={() => handleToggleGoing(event.id)}
+                    disabled={updatingGoing[event.id]}
+                    className={`going-btn ${goingStatus[event.id] ? 'going-active' : ''}`}
+                    title={goingStatus[event.id] ? "You're going - Click to remove" : "Mark as going"}
+                  >
+                    {updatingGoing[event.id] ? (
+                      '...'
+                    ) : goingStatus[event.id] ? (
+                      <>
+                        <span className="going-checkmark">✓</span> Going
+                      </>
+                    ) : (
+                      '+ Going'
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setEditingEvent(event)}
+                    className="edit-event-btn"
+                    title={isAdmin ? "Edit event" : "Request event edit"}
+                  >
+                    {isAdmin ? 'Edit' : 'Request Edit'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
+      
+      {editingEvent && (
+        <EditEventForm
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onSuccess={onEventUpdate}
+        />
+      )}
     </div>
   );
 };

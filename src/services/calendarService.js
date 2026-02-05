@@ -9,20 +9,44 @@ export const getAddToCalendarUrl = () => {
   return `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(icalUrl)}`;
 };
 
-// CORS proxy to bypass browser CORS restrictions
-// Using allorigins.win as a free CORS proxy service
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+// CORS proxies to bypass browser CORS restrictions
+// Try multiple proxies as fallback
+const CORS_PROXIES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://api.codetabs.com/v1/proxy?quest='
+];
 
-export const fetchCalendarEvents = async () => {
+const tryFetchWithProxy = async (proxyUrl, attempt = 0) => {
   try {
-    // Fetch through CORS proxy to avoid CORS issues
-    const proxyUrl = `${CORS_PROXY}${encodeURIComponent(PUBLIC_ICAL_URL)}`;
     const response = await fetch(proxyUrl, {
       method: 'GET',
       headers: {
         'Accept': 'text/calendar',
       },
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    // Try next proxy if available
+    if (attempt < CORS_PROXIES.length - 1) {
+      const nextProxy = CORS_PROXIES[attempt + 1];
+      const nextProxyUrl = `${nextProxy}${encodeURIComponent(PUBLIC_ICAL_URL)}`;
+      return tryFetchWithProxy(nextProxyUrl, attempt + 1);
+    }
+    throw error;
+  }
+};
+
+export const fetchCalendarEvents = async () => {
+  try {
+    // Try fetching through CORS proxy
+    const proxyUrl = `${CORS_PROXIES[0]}${encodeURIComponent(PUBLIC_ICAL_URL)}`;
+    const response = await tryFetchWithProxy(proxyUrl);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,9 +61,15 @@ export const fetchCalendarEvents = async () => {
       const event = new ICAL.Event(vevent);
       const start = event.startDate.toJSDate();
       const end = event.endDate.toJSDate();
+      const eventId = vevent.getFirstPropertyValue('uid');
+      
+      // Log event IDs for debugging (can be removed in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Event: "${event.summary || 'Untitled'}" | ID: ${eventId}`);
+      }
       
       return {
-        id: vevent.getFirstPropertyValue('uid'),
+        id: eventId,
         title: event.summary || 'Untitled Event',
         start: start,
         end: end,

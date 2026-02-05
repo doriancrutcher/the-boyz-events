@@ -201,3 +201,83 @@
   background-color: #000000;
   color: #ffffff;
 }
+
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 15px 10px;
+    margin: 15px auto;
+  }
+
+  .rbc-toolbar {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .rbc-toolbar button {
+    padding: 6px 12px;
+    font-size: 0.85em;
+  }
+
+  .rbc-toolbar-label {
+    font-size: 1em;
+    margin: 10px 0;
+  }
+
+  .rbc-header {
+    padding: 8px 2px;
+    font-size: 0.85em;
+  }
+
+  .rbc-date-cell {
+    font-size: 0.9em;
+  }
+
+  .rbc-event {
+    font-size: 0.75em;
+    padding: 1px 3px;
+  }
+
+  .rbc-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .rbc-btn-group button {
+    flex: 1;
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 10px 5px;
+  }
+
+  .rbc-toolbar {
+    gap: 8px;
+  }
+
+  .rbc-toolbar button {
+    padding: 5px 10px;
+    font-size: 0.75em;
+  }
+
+  .rbc-toolbar-label {
+    font-size: 0.9em;
+  }
+
+  .rbc-header {
+    padding: 6px 1px;
+    font-size: 0.75em;
+  }
+
+  .rbc-date-cell {
+    font-size: 0.8em;
+  }
+
+  .rbc-event {
+    font-size: 0.7em;
+  }
+}
