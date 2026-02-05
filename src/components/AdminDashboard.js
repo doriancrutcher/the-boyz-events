@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { getPendingRequests, updateRequestStatus } from '../services/eventRequestService';
 import { getPendingEdits, updateEditStatus } from '../services/eventEditService';
+import { getPendingApprovedEvents, markAsAddedToCalendar, deleteApprovedEvent } from '../services/approvedEventsService';
 import { trackEventRequestApproval, trackEditRequestDecision, trackAdminAction } from '../services/analyticsService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('requests'); // 'requests' or 'edits'
+  const [activeTab, setActiveTab] = useState('requests'); // 'requests', 'edits', or 'approved'
   const [requests, setRequests] = useState([]);
   const [edits, setEdits] = useState([]);
+  const [approvedEvents, setApprovedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [selectedEdit, setSelectedEdit] = useState(null);
@@ -18,12 +20,14 @@ const AdminDashboard = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [pendingRequests, pendingEdits] = await Promise.all([
+      const [pendingRequests, pendingEdits, pendingApproved] = await Promise.all([
         getPendingRequests(),
-        getPendingEdits()
+        getPendingEdits(),
+        getPendingApprovedEvents()
       ]);
       setRequests(pendingRequests);
       setEdits(pendingEdits);
+      setApprovedEvents(pendingApproved);
       
       // Check for highlighted request/edit from notification click
       const highlightRequestId = sessionStorage.getItem('highlightRequestId');
@@ -172,6 +176,12 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab('edits')}
         >
           Edit Requests ({edits.length})
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'approved' ? 'active' : ''}`}
+          onClick={() => setActiveTab('approved')}
+        >
+          Approved Events ({approvedEvents.length})
         </button>
       </div>
 
@@ -444,7 +454,72 @@ const AdminDashboard = () => {
             </div>
           )}
         </>
-      )}
+      ) : activeTab === 'approved' ? (
+        <>
+          <p className="dashboard-description">
+            Approved events waiting to be added to your calendar. Mark as "Added to Calendar" once you've added them manually.
+          </p>
+
+          {approvedEvents.length === 0 ? (
+            <div className="no-requests">No approved events pending calendar addition.</div>
+          ) : (
+            <div className="requests-list">
+              {approvedEvents.map((event) => (
+                <div key={event.id} className="request-card">
+                  <div className="request-header">
+                    <h3>{event.title}</h3>
+                    <span className="request-status approved">Approved</span>
+                  </div>
+                  
+                  <div className="request-details">
+                    <div className="detail-row">
+                      <strong>Submitted by:</strong> {event.userEmail}
+                    </div>
+                    <div className="detail-row">
+                      <strong>Event Date:</strong> {formatEventDate(event.eventDate)}
+                    </div>
+                    {event.eventTime && (
+                      <div className="detail-row">
+                        <strong>Time:</strong> {event.eventTime}
+                      </div>
+                    )}
+                    {event.location && (
+                      <div className="detail-row">
+                        <strong>Location:</strong> {event.location}
+                      </div>
+                    )}
+                    {event.description && (
+                      <div className="detail-row">
+                        <strong>Description:</strong>
+                        <p>{event.description}</p>
+                      </div>
+                    )}
+                    {event.flyerUrl && (
+                      <div className="detail-row">
+                        <strong>Flyer:</strong>
+                        <img src={event.flyerUrl} alt="Event flyer" className="flyer-image" />
+                      </div>
+                    )}
+                    <div className="detail-row">
+                      <strong>Approved:</strong> {formatDate(event.approvedAt)}
+                    </div>
+                  </div>
+
+                  <div className="request-actions">
+                    <button
+                      onClick={() => handleMarkAsAdded(event.id)}
+                      disabled={processing}
+                      className="approve-btn"
+                    >
+                      ✓ Added to Calendar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      ) : null}
     </div>
   );
 };

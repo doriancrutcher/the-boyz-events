@@ -14,6 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import { createNotification, createAdminNotification } from './notificationService';
 import { sendEventRequestEmail } from './emailService';
+import { saveApprovedEvent } from './approvedEventsService';
 
 const EVENT_REQUESTS_COLLECTION = 'eventRequests';
 const MAX_REQUESTS_PER_DAY = 3;
@@ -154,6 +155,12 @@ export const updateRequestStatus = async (requestId, status, adminNotes = '') =>
 
   // Create notification for the user
   if (status === 'approved') {
+    // Save to approved events collection
+    await saveApprovedEvent({
+      id: requestId,
+      ...requestData
+    });
+    
     await createNotification(
       requestData.userId,
       'request_approved',

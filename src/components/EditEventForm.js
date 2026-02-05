@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { submitEventEdit, applyEditDirectly } from '../services/eventEditService';
 import { trackEditRequest, trackAdminAction } from '../services/analyticsService';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../config/firebase';
 import './EditEventForm.css';
 
 const EditEventForm = ({ event, onClose, onSuccess }) => {
@@ -15,6 +17,9 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
     instaHandle: event.instaHandle || event.instagramHandle || '',
     eventOwner: event.eventOwner || ''
   });
+  const [flyerImage, setFlyerImage] = useState(null);
+  const [flyerPreview, setFlyerPreview] = useState(event.flyerUrl || null);
+  const [uploadingFlyer, setUploadingFlyer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -27,6 +32,32 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
     }));
   };
 
+  const handleFlyerChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setError('Image size must be less than 5MB');
+        return;
+      }
+      setFlyerImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFlyerPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadFlyer = async (file, eventId) => {
+    if (!currentUser) return null;
+    
+    const storageRef = ref(storage, `event-flyers/${eventId}/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -34,9 +65,30 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
+      // Upload flyer if a new one was selected
+      let flyerUrl = event.flyerUrl || null;
+      if (flyerImage) {
+        setUploadingFlyer(true);
+        try {
+          flyerUrl = await uploadFlyer(flyerImage, event.id);
+        } catch (error) {
+          console.error('Error uploading flyer:', error);
+          setError('Error uploading flyer image');
+          setLoading(false);
+          setUploadingFlyer(false);
+          return;
+        }
+        setUploadingFlyer(false);
+      }
+
+      const editData = {
+        ...formData,
+        flyerUrl: flyerUrl
+      };
+
       if (isAdmin) {
         // Admin can apply changes directly
-        await applyEditDirectly(event.id, formData);
+        await applyEditDirectly(event.id, editData);
         trackAdminAction('edit_event_directly', { event_id: event.id });
         setSuccess('Event updated successfully!');
         if (onSuccess) {
@@ -50,7 +102,7 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
       } else {
         // Regular users submit for approval
         await submitEventEdit(event.id, {
-          ...formData,
+          ...editData,
           originalEvent: event
         }, currentUser.uid, currentUser.email);
         trackEditRequest(event.id);
@@ -170,6 +222,25 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
             />
           </div>
 
+          <div className="form-group">
+            <label htmlFor="flyer-image">Event Flyer Image</label>
+            <input
+              id="flyer-image"
+              type="file"
+              accept="image/*"
+              onChange={handleFlyerChange}
+              className="form-input"
+            />
+            {flyerPreview && (
+              <div className="flyer-preview">
+                <img src={flyerPreview} alt="Flyer preview" className="flyer-preview-image" />
+                {event.flyerUrl && flyerPreview === event.flyerUrl && (
+                  <p className="flyer-info">Current flyer</p>
+                )}
+              </div>
+            )}
+          </div>
+
           {!isAdmin && (
             <p className="admin-note">
               Note: Your changes will be reviewed by an admin before being applied.
@@ -187,10 +258,10 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploadingFlyer}
               className="submit-btn"
             >
-              {loading ? 'Saving...' : isAdmin ? 'Save Changes' : 'Submit for Approval'}
+              {uploadingFlyer ? 'Uploading flyer...' : loading ? 'Saving...' : isAdmin ? 'Save Changes' : 'Submit for Approval'}
             </button>
           </div>
         </form>

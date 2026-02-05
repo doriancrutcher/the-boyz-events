@@ -33,6 +33,7 @@ export const submitEventEdit = async (eventId, editData, userId, userEmail) => {
         partifulLink: editData.partifulLink || '',
         instaHandle: editData.instaHandle || '',
         eventOwner: editData.eventOwner || '',
+        flyerUrl: editData.flyerUrl || null,
       },
       status: 'pending', // pending, approved, rejected
       createdAt: Timestamp.now(),
@@ -75,6 +76,7 @@ export const applyEditDirectly = async (eventId, editData) => {
     
     if (editData.chatUrl !== undefined) metadata.chatUrl = editData.chatUrl || null;
     if (editData.partifulLink !== undefined) metadata.partifulLink = editData.partifulLink || null;
+    if (editData.flyerUrl !== undefined) metadata.flyerUrl = editData.flyerUrl || null;
     if (editData.instaHandle !== undefined) {
       const cleanHandle = (editData.instaHandle || '').replace('@', '');
       metadata.instaHandle = cleanHandle || null;
@@ -149,6 +151,9 @@ export const updateEditStatus = async (editId, status, adminNotes = '') => {
     }
     if (editData.proposedChanges.partifulLink !== undefined) {
       metadata.partifulLink = editData.proposedChanges.partifulLink || null;
+    }
+    if (editData.proposedChanges.flyerUrl !== undefined) {
+      metadata.flyerUrl = editData.proposedChanges.flyerUrl || null;
     }
     if (editData.proposedChanges.instaHandle !== undefined) {
       const cleanHandle = (editData.proposedChanges.instaHandle || '').replace('@', '');
