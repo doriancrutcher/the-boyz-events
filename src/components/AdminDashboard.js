@@ -150,10 +150,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleMarkAsAdded = async (approvedEventId) => {
+    if (!window.confirm('Mark this event as added to calendar? It will be removed from this list.')) {
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      await markAsAddedToCalendar(approvedEventId);
+      await loadData();
+      alert('Event marked as added to calendar!');
+    } catch (error) {
+      console.error('Error marking event as added:', error);
+      alert('Failed to mark event as added');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
+
+  const formatEventDate = (timestamp) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString();
   };
 
   if (loading) {
@@ -306,7 +330,7 @@ const AdminDashboard = () => {
         </div>
       )}
         </>
-      ) : (
+      ) : activeTab === 'edits' ? (
         <>
           <p className="dashboard-description">
             Review and approve/reject event edit requests from users.
