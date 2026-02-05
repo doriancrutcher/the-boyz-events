@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   getUserNotifications, 
@@ -17,13 +17,7 @@ const Notifications = ({ onClose, onNavigateToRequest, onNavigateToEdit }) => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  useEffect(() => {
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
       setLoading(true);
       if (isAdmin) {
@@ -46,7 +40,13 @@ const Notifications = ({ onClose, onNavigateToRequest, onNavigateToEdit }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin, currentUser]);
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [loadNotifications]);
 
   const handleMarkAsRead = async (notificationId) => {
     try {

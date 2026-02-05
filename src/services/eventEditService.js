@@ -13,7 +13,6 @@ import { db } from '../config/firebase';
 import { createNotification, createAdminNotification } from './notificationService';
 
 const EVENT_EDITS_COLLECTION = 'eventEdits';
-const ADMIN_EMAIL = 'thegayboyzevents@gmail.com';
 
 /**
  * Submit an event edit request

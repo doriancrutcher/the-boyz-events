@@ -13,7 +13,6 @@ import {
 import { db } from '../config/firebase';
 
 const NOTIFICATIONS_COLLECTION = 'userNotifications';
-const ADMIN_EMAIL = 'thegayboyzevents@gmail.com';
 
 /**
  * Create a notification for a user

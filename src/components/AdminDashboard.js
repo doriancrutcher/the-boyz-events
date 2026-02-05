@@ -6,7 +6,6 @@ import { trackEventRequestApproval, trackEditRequestDecision, trackAdminAction }
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('requests'); // 'requests' or 'edits'
   const [requests, setRequests] = useState([]);
   const [edits, setEdits] = useState([]);
