@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { createNotification, createAdminNotification } from './notificationService';
+import { sendEditRequestEmail } from './emailService';
 
 const EVENT_EDITS_COLLECTION = 'eventEdits';
 
@@ -48,6 +49,13 @@ export const submitEventEdit = async (eventId, editData, userId, userEmail) => {
       docRef.id,
       userEmail
     );
+    
+    // Send email notification to admin
+    await sendEditRequestEmail({
+      userEmail,
+      eventTitle: editData.originalEvent?.title || 'Unknown Event',
+      editId: docRef.id
+    });
     
     return docRef.id;
   } catch (error) {

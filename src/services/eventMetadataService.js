@@ -101,6 +101,7 @@ export const enrichEventsWithMetadata = async (events) => {
         instaHandle: eventMetadata.instaHandle || null,
         eventOwner: eventMetadata.eventOwner || null,
         ownerInstagram: eventMetadata.ownerInstagram || `https://instagram.com/${eventMetadata.instaHandle || eventMetadata.instagramHandle || ''}`,
+        flyerUrl: eventMetadata.flyerUrl || null,
         cancelled: eventMetadata.cancelled || false,
       };
     });

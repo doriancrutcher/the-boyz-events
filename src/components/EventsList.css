@@ -148,6 +148,27 @@
   font-size: 0.9em;
 }
 
+.event-flyer {
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.event-flyer-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.event-flyer-image:hover {
+  transform: scale(1.02);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .event-actions {
   margin-top: 16px;
   padding-top: 16px;

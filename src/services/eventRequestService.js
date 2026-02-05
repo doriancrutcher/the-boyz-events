@@ -13,6 +13,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import { createNotification, createAdminNotification } from './notificationService';
+import { sendEventRequestEmail } from './emailService';
 
 const EVENT_REQUESTS_COLLECTION = 'eventRequests';
 const MAX_REQUESTS_PER_DAY = 3;
@@ -91,6 +92,12 @@ export const submitEventRequest = async (requestData, userId, userEmail) => {
       docRef.id,
       userEmail
     );
+    
+    // Send email notification to admin
+    await sendEventRequestEmail({
+      ...requestDoc,
+      requestId: docRef.id
+    });
     
     return docRef.id;
   } catch (error) {

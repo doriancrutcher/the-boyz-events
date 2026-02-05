@@ -2,14 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { getAllEventMetadata, setEventMetadata } from '../services/eventMetadataService';
 import { cancelEvent } from '../services/eventCancellationService';
 import { trackEventCancellation, trackAdminAction } from '../services/analyticsService';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../config/firebase';
+import { useAuth } from '../contexts/AuthContext';
 import './EventAdmin.css';
 
 const EventAdmin = ({ events, onUpdate }) => {
+  const { currentUser } = useAuth();
   const [selectedEventId, setSelectedEventId] = useState('');
   const [chatUrl, setChatUrl] = useState('');
   const [partifulLink, setPartifulLink] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
   const [eventOwner, setEventOwner] = useState('');
+  const [flyerImage, setFlyerImage] = useState(null);
+  const [flyerPreview, setFlyerPreview] = useState(null);
+  const [existingFlyerUrl, setExistingFlyerUrl] = useState(null);
+  const [uploadingFlyer, setUploadingFlyer] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -27,9 +35,38 @@ const EventAdmin = ({ events, onUpdate }) => {
       setPartifulLink(metadata.partifulLink || '');
       setInstagramHandle(metadata.instaHandle || metadata.instagramHandle || '');
       setEventOwner(metadata.eventOwner || '');
+      setExistingFlyerUrl(metadata.flyerUrl || null);
+      setFlyerPreview(metadata.flyerUrl || null);
+      setFlyerImage(null);
     } catch (error) {
       console.error('Error loading metadata:', error);
     }
+  };
+
+  const handleFlyerChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setMessage('Image size must be less than 5MB');
+        return;
+      }
+      setFlyerImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFlyerPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadFlyer = async (file, eventId) => {
+    if (!currentUser) return null;
+    
+    const storageRef = ref(storage, `event-flyers/${eventId}/${Date.now()}_${file.name}`);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
   };
 
   const handleSave = async (e) => {
@@ -43,6 +80,22 @@ const EventAdmin = ({ events, onUpdate }) => {
     setMessage('');
 
     try {
+      // Upload flyer if a new one was selected
+      let flyerUrl = existingFlyerUrl;
+      if (flyerImage) {
+        setUploadingFlyer(true);
+        try {
+          flyerUrl = await uploadFlyer(flyerImage, selectedEventId);
+        } catch (error) {
+          console.error('Error uploading flyer:', error);
+          setMessage('Error uploading flyer image');
+          setLoading(false);
+          setUploadingFlyer(false);
+          return;
+        }
+        setUploadingFlyer(false);
+      }
+
       const metadata = {};
       if (chatUrl.trim()) {
         metadata.chatUrl = chatUrl.trim();
@@ -57,6 +110,9 @@ const EventAdmin = ({ events, onUpdate }) => {
         metadata.ownerInstagram = `https://instagram.com/${cleanHandle}`;
       } else if (eventOwner.trim()) {
         metadata.eventOwner = eventOwner.trim();
+      }
+      if (flyerUrl) {
+        metadata.flyerUrl = flyerUrl;
       }
 
       const success = await setEventMetadata(selectedEventId, metadata);
@@ -73,6 +129,8 @@ const EventAdmin = ({ events, onUpdate }) => {
           setPartifulLink('');
           setInstagramHandle('');
           setEventOwner('');
+          setFlyerImage(null);
+          setFlyerPreview(existingFlyerUrl);
         }, 2000);
       } else {
         setMessage('Failed to save event metadata');
@@ -213,12 +271,31 @@ const EventAdmin = ({ events, onUpdate }) => {
               />
             </div>
 
+            <div className="form-group">
+              <label htmlFor="flyer-image">Event Flyer Image:</label>
+              <input
+                id="flyer-image"
+                type="file"
+                accept="image/*"
+                onChange={handleFlyerChange}
+                className="form-input"
+              />
+              {flyerPreview && (
+                <div className="flyer-preview">
+                  <img src={flyerPreview} alt="Flyer preview" className="flyer-preview-image" />
+                  {existingFlyerUrl && flyerPreview === existingFlyerUrl && (
+                    <p className="flyer-info">Current flyer</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || uploadingFlyer}
               className="save-btn"
             >
-              {loading ? 'Saving...' : 'Save Event Details'}
+              {uploadingFlyer ? 'Uploading flyer...' : loading ? 'Saving...' : 'Save Event Details'}
             </button>
             
             <button

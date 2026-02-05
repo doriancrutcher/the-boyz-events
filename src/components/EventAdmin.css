@@ -216,3 +216,25 @@
     padding: 10px 20px;
   }
 }
+
+.flyer-preview {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flyer-preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.flyer-info {
+  color: #cccccc;
+  font-size: 0.85em;
+  font-style: italic;
+}

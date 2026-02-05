@@ -165,6 +165,15 @@ const EventsList = ({ events, onEventUpdate }) => {
                 {event.description && (
                   <div className="event-description">{event.description}</div>
                 )}
+                {event.flyerUrl && (
+                  <div className="event-flyer">
+                    <img 
+                      src={event.flyerUrl} 
+                      alt={`Flyer for ${event.title}`}
+                      className="event-flyer-image"
+                    />
+                  </div>
+                )}
                 <div className="event-going-count">
                   <span className="info-icon">👥</span>
                   {goingCounts[event.id] || 0} {goingCounts[event.id] === 1 ? 'member' : 'members'} going
