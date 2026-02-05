@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
-import { trackLogin, trackLogout, setAnalyticsUserId, setAnalyticsUserProperties } from '../services/analyticsService';
+import { trackLogout, setAnalyticsUserId, setAnalyticsUserProperties } from '../services/analyticsService';
 
 const AuthContext = createContext({});
 

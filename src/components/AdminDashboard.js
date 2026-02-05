@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getPendingRequests, updateRequestStatus } from '../services/eventRequestService';
 import { getPendingEdits, updateEditStatus } from '../services/eventEditService';
-import { useAuth } from '../contexts/AuthContext';
 import { trackEventRequestApproval, trackEditRequestDecision, trackAdminAction } from '../services/analyticsService';
 import './AdminDashboard.css';
 
