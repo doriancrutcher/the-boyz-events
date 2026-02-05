@@ -63,6 +63,18 @@ service cloud.firestore {
       allow delete: if request.auth != null && 
                      request.auth.uid == resource.data.userId;
     }
+    
+    // Approved events (for manual calendar entry)
+    match /approvedEvents/{eventId} {
+      allow read: if request.auth != null && 
+                    request.auth.token.email == 'thegayboyzevents@gmail.com';
+      allow create: if request.auth != null && 
+                      request.auth.token.email == 'thegayboyzevents@gmail.com';
+      allow update: if request.auth != null && 
+                      request.auth.token.email == 'thegayboyzevents@gmail.com';
+      allow delete: if request.auth != null && 
+                      request.auth.token.email == 'thegayboyzevents@gmail.com';
+    }
   }
 }
 ```
@@ -89,3 +101,4 @@ In your rules, the `eventGoing` match block was placed **outside** the main `mat
 - **users**: Users can read/write their own data
 - **adminNotifications**: Only admin can read, anyone can create
 - **userNotifications**: Users can only read/write their own notifications
+- **approvedEvents**: Only admin can read/write (for manual calendar entry workflow)
