@@ -3,6 +3,7 @@ import moment from 'moment';
 import { useAuth } from '../contexts/AuthContext';
 import EditEventForm from './EditEventForm';
 import { toggleGoingStatus, getGoingCountsForEvents, getGoingStatusForEvents } from '../services/eventGoingService';
+import { trackEventGoing, trackEventEdit } from '../services/analyticsService';
 import './EventsList.css';
 
 const EventsList = ({ events, onEventUpdate }) => {
@@ -51,7 +52,13 @@ const EventsList = ({ events, onEventUpdate }) => {
     setUpdatingGoing(prev => ({ ...prev, [eventId]: true }));
     try {
       const userName = currentUser.displayName || currentUser.email || 'User';
+      const event = upcomingEvents.find(e => e.id === eventId);
       const isGoing = await toggleGoingStatus(eventId, currentUser.uid, userName);
+      
+      // Track analytics
+      if (event) {
+        trackEventGoing(eventId, event.title, isGoing);
+      }
       
       // Update local state
       setGoingStatus(prev => ({ ...prev, [eventId]: isGoing }));
@@ -182,7 +189,10 @@ const EventsList = ({ events, onEventUpdate }) => {
                     )}
                   </button>
                   <button
-                    onClick={() => setEditingEvent(event)}
+                    onClick={() => {
+                      trackEventEdit(event.id, event.title, isAdmin);
+                      setEditingEvent(event);
+                    }}
                     className="edit-event-btn"
                     title={isAdmin ? "Edit event" : "Request event edit"}
                   >

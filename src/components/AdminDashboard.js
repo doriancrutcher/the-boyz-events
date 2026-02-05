@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getPendingRequests, updateRequestStatus } from '../services/eventRequestService';
 import { getPendingEdits, updateEditStatus } from '../services/eventEditService';
 import { useAuth } from '../contexts/AuthContext';
+import { trackEventRequestApproval, trackEditRequestDecision, trackAdminAction } from '../services/analyticsService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -69,6 +70,8 @@ const AdminDashboard = () => {
     setProcessing(true);
     try {
       await updateRequestStatus(requestId, 'approved', adminNotes);
+      trackEventRequestApproval(requestId, true);
+      trackAdminAction('approve_event_request', { request_id: requestId });
       await loadData();
       setSelectedRequest(null);
       setAdminNotes('');
@@ -90,6 +93,8 @@ const AdminDashboard = () => {
     setProcessing(true);
     try {
       await updateRequestStatus(requestId, 'rejected', adminNotes);
+      trackEventRequestApproval(requestId, false);
+      trackAdminAction('reject_event_request', { request_id: requestId });
       await loadData();
       setSelectedRequest(null);
       setAdminNotes('');
@@ -106,6 +111,8 @@ const AdminDashboard = () => {
     setProcessing(true);
     try {
       await updateEditStatus(editId, 'approved', adminNotes);
+      trackEditRequestDecision(editId, true);
+      trackAdminAction('approve_edit_request', { edit_id: editId });
       await loadData();
       setSelectedEdit(null);
       setAdminNotes('');
@@ -127,6 +134,8 @@ const AdminDashboard = () => {
     setProcessing(true);
     try {
       await updateEditStatus(editId, 'rejected', adminNotes);
+      trackEditRequestDecision(editId, false);
+      trackAdminAction('reject_edit_request', { edit_id: editId });
       await loadData();
       setSelectedEdit(null);
       setAdminNotes('');

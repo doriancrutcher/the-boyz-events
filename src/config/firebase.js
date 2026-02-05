@@ -6,6 +6,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
+import { getAnalytics, isSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "your-api-key",
@@ -27,5 +28,19 @@ export const auth = getAuth(app);
 
 // Initialize Storage
 export const storage = getStorage(app);
+
+// Initialize Analytics (only in browser environment)
+export let analytics = null;
+if (typeof window !== 'undefined') {
+  // Initialize analytics synchronously if supported
+  try {
+    // Check if analytics is supported (most modern browsers)
+    if (typeof navigator !== 'undefined' && !navigator.userAgent.includes('bot')) {
+      analytics = getAnalytics(app);
+    }
+  } catch (error) {
+    console.warn('Analytics initialization failed:', error);
+  }
+}
 
 export default app;

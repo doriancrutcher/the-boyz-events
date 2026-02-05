@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { submitEventRequest, checkDailyLimit } from '../services/eventRequestService';
+import { trackEventRequest } from '../services/analyticsService';
 import './EventRequestForm.css';
 
 const EventRequestForm = () => {
@@ -73,6 +74,9 @@ const EventRequestForm = () => {
       }
 
       await submitEventRequest(formData, currentUser.uid, currentUser.email);
+      
+      // Track analytics
+      trackEventRequest(!!formData.flyerImage);
       
       setSuccess('Event request submitted successfully! The admin will review it and you\'ll be notified.');
       setFormData({

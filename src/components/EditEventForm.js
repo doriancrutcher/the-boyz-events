@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { submitEventEdit, applyEditDirectly } from '../services/eventEditService';
+import { trackEditRequest, trackAdminAction } from '../services/analyticsService';
 import './EditEventForm.css';
 
 const EditEventForm = ({ event, onClose, onSuccess }) => {
@@ -36,6 +37,7 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
       if (isAdmin) {
         // Admin can apply changes directly
         await applyEditDirectly(event.id, formData);
+        trackAdminAction('edit_event_directly', { event_id: event.id });
         setSuccess('Event updated successfully!');
         if (onSuccess) {
           setTimeout(() => {
@@ -51,6 +53,7 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
           ...formData,
           originalEvent: event
         }, currentUser.uid, currentUser.email);
+        trackEditRequest(event.id);
         setSuccess('Edit request submitted! The admin will review it.');
         setTimeout(() => onClose(), 2000);
       }

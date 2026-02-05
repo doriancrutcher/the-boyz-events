@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
+import { trackLogin, trackLogout, setAnalyticsUserId, setAnalyticsUserProperties } from '../services/analyticsService';
 
 const AuthContext = createContext({});
 
@@ -36,6 +37,13 @@ export const AuthProvider = ({ children }) => {
         const isAdmin = user.email === ADMIN_EMAIL;
         setUserRole(isAdmin ? 'admin' : 'user');
         
+        // Set analytics user properties
+        setAnalyticsUserId(user.uid);
+        setAnalyticsUserProperties({
+          email: user.email,
+          is_admin: isAdmin
+        });
+        
         // Create user document if it doesn't exist
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
@@ -49,6 +57,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setCurrentUser(null);
         setUserRole(null);
+        setAnalyticsUserId(null);
       }
       setLoading(false);
     });
@@ -69,6 +78,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    trackLogout();
     return signOut(auth);
   };
 

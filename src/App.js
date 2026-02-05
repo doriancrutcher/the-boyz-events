@@ -12,6 +12,7 @@ import { fetchCalendarEvents, getAddToCalendarUrl } from './services/calendarSer
 import { enrichEventsWithMetadata } from './services/eventMetadataService';
 import { getCachedEvents, cacheEvents } from './services/eventCacheService';
 import { getUnreadNotificationCount, getUnreadAdminNotificationCount } from './services/notificationService';
+import { trackPageView, trackCalendarAdd, trackCalendarRefresh, setAnalyticsUserId, setAnalyticsUserProperties } from './services/analyticsService';
 
 function App() {
   const { currentUser, isAdmin, logout } = useAuth();
@@ -73,6 +74,26 @@ function App() {
     
     return () => clearInterval(interval);
   }, [loadEvents]);
+
+  // Track page views when tab changes
+  useEffect(() => {
+    const pageName = activeTab === 'events' ? 'events' : 
+                     activeTab === 'login' ? 'login' :
+                     activeTab === 'request' ? 'request_event' :
+                     activeTab === 'admin' ? 'admin_dashboard' : 'events';
+    trackPageView(pageName);
+  }, [activeTab]);
+
+  // Set user properties when user logs in
+  useEffect(() => {
+    if (currentUser) {
+      setAnalyticsUserId(currentUser.uid);
+      setAnalyticsUserProperties({
+        email: currentUser.email,
+        is_admin: isAdmin
+      });
+    }
+  }, [currentUser, isAdmin]);
 
   // Automatically switch to events view when user logs in
   useEffect(() => {
@@ -144,10 +165,24 @@ function App() {
                 )}
                 {!isAdmin && (
                   <button
-                    onClick={() => setActiveTab(activeTab === 'request' ? 'events' : 'request')}
+                    onClick={() => {
+                      if (currentUser) {
+                        setActiveTab(activeTab === 'request' ? 'events' : 'request');
+                      } else {
+                        setActiveTab('login');
+                      }
+                    }}
                     className="header-btn"
                   >
                     {activeTab === 'request' ? '📅 Events' : '➕ Request Event'}
+                  </button>
+                )}
+                {!currentUser && (
+                  <button
+                    onClick={() => setActiveTab('login')}
+                    className="header-btn"
+                  >
+                    ➕ Request Event
                   </button>
                 )}
                 <button 
@@ -200,11 +235,15 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
                     className="add-calendar-btn"
+                    onClick={() => trackCalendarAdd()}
                   >
                     📅 Add to Google Calendar
                   </a>
                   <button 
-                    onClick={() => loadEvents(true)}
+                    onClick={() => {
+                      trackCalendarRefresh();
+                      loadEvents(true);
+                    }}
                     disabled={refreshing}
                     className="refresh-btn"
                     title="Refresh events"
@@ -223,10 +262,16 @@ function App() {
                   </button>
                 </div>
                 <Calendar events={events} />
-                {!isAdmin && currentUser && (
+                {!isAdmin && (
                   <div className="request-event-section">
                     <button
-                      onClick={() => setActiveTab(activeTab === 'request' ? 'events' : 'request')}
+                      onClick={() => {
+                        if (currentUser) {
+                          setActiveTab(activeTab === 'request' ? 'events' : 'request');
+                        } else {
+                          setActiveTab('login');
+                        }
+                      }}
                       className="request-event-btn"
                     >
                       {activeTab === 'request' ? '📅 Back to Events' : '➕ Request Event'}

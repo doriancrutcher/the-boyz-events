@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAllEventMetadata, setEventMetadata } from '../services/eventMetadataService';
 import { cancelEvent } from '../services/eventCancellationService';
+import { trackEventCancellation, trackAdminAction } from '../services/analyticsService';
 import './EventAdmin.css';
 
 const EventAdmin = ({ events, onUpdate }) => {
@@ -98,6 +99,15 @@ const EventAdmin = ({ events, onUpdate }) => {
 
     try {
       const result = await cancelEvent(selectedEventId, selectedEvent.title);
+      
+      // Track analytics
+      trackEventCancellation(selectedEventId, selectedEvent.title);
+      trackAdminAction('cancel_event', { 
+        event_id: selectedEventId, 
+        event_title: selectedEvent.title,
+        notified_count: result.notifiedCount 
+      });
+      
       setMessage(`Event cancelled successfully! ${result.notifiedCount} user(s) were notified.`);
       
       if (onUpdate) {
