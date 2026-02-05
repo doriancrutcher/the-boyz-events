@@ -64,7 +64,8 @@ const EventAdmin = ({ events, onUpdate }) => {
   const uploadFlyer = async (file, eventId) => {
     if (!currentUser) return null;
     
-    const storageRef = ref(storage, `event-flyers/${eventId}/${Date.now()}_${file.name}`);
+    // Use events/ prefix for event-attached flyers (different from user request flyers)
+    const storageRef = ref(storage, `event-flyers/events/${eventId}/${Date.now()}_${file.name}`);
     await uploadBytes(storageRef, file);
     return getDownloadURL(storageRef);
   };

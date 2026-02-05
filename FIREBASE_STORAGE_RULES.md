@@ -25,12 +25,20 @@ This means your Storage rules are blocking the upload.
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Event flyers - users can upload to their own folder
+    // Event flyers - users can upload to their own folder (for event requests)
     match /event-flyers/{userId}/{allPaths=**} {
       // Anyone can read (view) the images
       allow read: if true;
       // Only authenticated users can write, and only to their own folder
       allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Event flyers - attached directly to events (for admin edits)
+    match /event-flyers/events/{eventId}/{allPaths=**} {
+      // Anyone can read (view) the images
+      allow read: if true;
+      // Only authenticated users can write (admin or event owner)
+      allow write: if request.auth != null;
     }
     
     // Default: deny all other access
@@ -45,9 +53,11 @@ service firebase.storage {
 
 ## Rule Explanation
 
-- `event-flyers/{userId}/{allPaths=**}` - Matches files in the event-flyers folder, organized by user ID
+- `event-flyers/{userId}/{allPaths=**}` - Matches files in the event-flyers folder, organized by user ID (for event requests)
+- `event-flyers/events/{eventId}/{allPaths=**}` - Matches files attached directly to events (for admin edits)
 - `allow read: if true` - Anyone can view/download the images
-- `allow write: if request.auth != null && request.auth.uid == userId` - Only logged-in users can upload, and only to their own folder (prevents users from uploading to other users' folders)
+- `allow write: if request.auth != null && request.auth.uid == userId` - Only logged-in users can upload to their own folder (for event requests)
+- `allow write: if request.auth != null` - Any authenticated user can upload event-attached flyers (for edits)
 
 ## After Updating Rules
 
