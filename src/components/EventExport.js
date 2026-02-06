@@ -19,7 +19,7 @@ const EventExport = ({ events, containerRef, isOpen, onClose }) => {
 
   const dateRanges = useMemo(() => getDateRanges(), []);
 
-  const getCurrentDateRange = () => {
+  const getCurrentDateRange = useMemo(() => {
     if (selectedRange === 'custom' && customStart && customEnd) {
       return {
         label: 'Custom Range',
@@ -28,12 +28,11 @@ const EventExport = ({ events, containerRef, isOpen, onClose }) => {
       };
     }
     return dateRanges[selectedRange] || dateRanges.thisWeekend;
-  };
+  }, [selectedRange, customStart, customEnd, dateRanges]);
 
   const filteredEvents = useMemo(() => {
-    const range = getCurrentDateRange();
-    return filterEventsByDateRange(events, range);
-  }, [events, selectedRange, customStart, customEnd]);
+    return filterEventsByDateRange(events, getCurrentDateRange);
+  }, [events, getCurrentDateRange]);
 
   const handleExportPDF = async () => {
     if (filteredEvents.length === 0) {
@@ -43,8 +42,7 @@ const EventExport = ({ events, containerRef, isOpen, onClose }) => {
 
     setExporting(true);
     try {
-      const range = getCurrentDateRange();
-      await exportEventsToPDF(filteredEvents, range);
+      await exportEventsToPDF(filteredEvents, getCurrentDateRange);
     } catch (error) {
       console.error('Error exporting PDF:', error);
       alert('Failed to export PDF. Please try again.');
@@ -61,8 +59,7 @@ const EventExport = ({ events, containerRef, isOpen, onClose }) => {
 
     setExporting(true);
     try {
-      const range = getCurrentDateRange();
-      await exportEventsToImage(filteredEvents, range, containerRef?.current);
+      await exportEventsToImage(filteredEvents, getCurrentDateRange, containerRef?.current);
     } catch (error) {
       console.error('Error exporting image:', error);
       alert('Failed to export image. Please try again.');
