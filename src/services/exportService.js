@@ -251,17 +251,20 @@ export const getDateRanges = () => {
   const today = moment().startOf('day');
   const currentDay = today.day(); // 0 = Sunday, 6 = Saturday
   
-  // Calculate this weekend (Saturday to Sunday)
-  let thisWeekendSaturday = moment().day(6); // Get Saturday of current week
-  if (thisWeekendSaturday.isBefore(today)) {
-    // If Saturday has passed, get next Saturday
-    thisWeekendSaturday = thisWeekendSaturday.add(1, 'week');
+  // Calculate this weekend (Friday to Sunday)
+  let thisWeekendFriday = moment().day(5); // Get Friday of current week (5 = Friday)
+  if (thisWeekendFriday.isBefore(today)) {
+    // If Friday has passed, get next Friday
+    thisWeekendFriday = thisWeekendFriday.add(1, 'week');
   }
+  // Saturday is the day after Friday
+  const thisWeekendSaturday = thisWeekendFriday.clone().add(1, 'day');
   // Sunday is the day after Saturday
   const thisWeekendSunday = thisWeekendSaturday.clone().add(1, 'day');
   
   // Next weekend is 7 days after this weekend
-  const nextWeekendSaturday = thisWeekendSaturday.clone().add(1, 'week');
+  const nextWeekendFriday = thisWeekendFriday.clone().add(1, 'week');
+  const nextWeekendSaturday = nextWeekendFriday.clone().add(1, 'day');
   const nextWeekendSunday = nextWeekendSaturday.clone().add(1, 'day');
 
   return {
@@ -272,12 +275,12 @@ export const getDateRanges = () => {
     },
     thisWeekend: {
       label: 'This Weekend',
-      start: thisWeekendSaturday.startOf('day').toDate(),
+      start: thisWeekendFriday.startOf('day').toDate(),
       end: thisWeekendSunday.endOf('day').toDate()
     },
     nextWeekend: {
       label: 'Next Weekend',
-      start: nextWeekendSaturday.startOf('day').toDate(),
+      start: nextWeekendFriday.startOf('day').toDate(),
       end: nextWeekendSunday.endOf('day').toDate()
     },
     thisWeek: {
