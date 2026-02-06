@@ -7,6 +7,7 @@ import Login from './components/Login';
 import EventRequestForm from './components/EventRequestForm';
 import AdminDashboard from './components/AdminDashboard';
 import Notifications from './components/Notifications';
+import InAppBrowserPrompt from './components/InAppBrowserPrompt';
 import { useAuth } from './contexts/AuthContext';
 import { fetchCalendarEvents, getAddToCalendarUrl } from './services/calendarService';
 import { enrichEventsWithMetadata } from './services/eventMetadataService';
@@ -338,6 +339,8 @@ function App() {
           }}
         />
       )}
+      
+      <InAppBrowserPrompt />
     </div>
   );
 }
