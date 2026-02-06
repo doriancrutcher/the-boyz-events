@@ -4,9 +4,18 @@
   padding: 20px;
 }
 
+.events-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
 .events-list-container h2 {
   color: #ffffff;
-  margin-bottom: 24px;
+  margin: 0;
   font-size: 2em;
   font-weight: 700;
   text-shadow: 

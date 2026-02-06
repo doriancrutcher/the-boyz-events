@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -9,10 +9,13 @@ const localizer = momentLocalizer(moment);
 const Calendar = ({ events }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const calendarEvents = events.map(event => ({
-    ...event,
-    title: event.title,
-  }));
+  // Memoize calendar events to prevent recreation on every render
+  const calendarEvents = useMemo(() => {
+    return events.map(event => ({
+      ...event,
+      title: event.title,
+    }));
+  }, [events]);
 
   const handleNavigate = (date) => {
     setCurrentDate(date);

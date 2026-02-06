@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import moment from 'moment';
 import { useAuth } from '../contexts/AuthContext';
 import EditEventForm from './EditEventForm';
+import EventExport from './EventExport';
 import { toggleGoingStatus, getGoingCountsForEvents, getGoingStatusForEvents } from '../services/eventGoingService';
 import { trackEventGoing, trackEventEdit } from '../services/analyticsService';
 import './EventsList.css';
@@ -12,13 +13,16 @@ const EventsList = ({ events, onEventUpdate }) => {
   const [goingStatus, setGoingStatus] = useState({});
   const [goingCounts, setGoingCounts] = useState({});
   const [updatingGoing, setUpdatingGoing] = useState({});
+  const containerRef = useRef(null);
   
-  // Filter out past events and cancelled events - only show upcoming events
-  const now = new Date();
-  const upcomingEvents = events.filter(event => {
-    const eventEnd = new Date(event.end);
-    return eventEnd >= now && !event.cancelled;
-  });
+  // Memoize filtered events to prevent recalculation on every render
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+    return events.filter(event => {
+      const eventEnd = new Date(event.end);
+      return eventEnd >= now && !event.cancelled;
+    });
+  }, [events]);
 
   // Load going status and counts
   useEffect(() => {
@@ -46,7 +50,7 @@ const EventsList = ({ events, onEventUpdate }) => {
     loadGoingData();
   }, [upcomingEvents, currentUser]);
 
-  const handleToggleGoing = async (eventId) => {
+  const handleToggleGoing = useCallback(async (eventId) => {
     if (!currentUser) return;
     
     setUpdatingGoing(prev => ({ ...prev, [eventId]: true }));
@@ -75,7 +79,21 @@ const EventsList = ({ events, onEventUpdate }) => {
     } finally {
       setUpdatingGoing(prev => ({ ...prev, [eventId]: false }));
     }
-  };
+  }, [currentUser, upcomingEvents]);
+
+  // Memoize format functions to prevent recreation on every render
+  const formatDate = useCallback((date) => {
+    return moment(date).format('MMM D, YYYY');
+  }, []);
+
+  const formatTime = useCallback((date) => {
+    return moment(date).format('h:mm A');
+  }, []);
+
+  const handleEditClick = useCallback((event) => {
+    trackEventEdit(event.id, event.title, isAdmin);
+    setEditingEvent(event);
+  }, [isAdmin]);
 
   if (upcomingEvents.length === 0) {
     return (
@@ -86,31 +104,35 @@ const EventsList = ({ events, onEventUpdate }) => {
     );
   }
 
-  const formatDate = (date) => {
-    return moment(date).format('MMM D, YYYY');
-  };
-
-  const formatTime = (date) => {
-    return moment(date).format('h:mm A');
-  };
-
   return (
-    <div className="events-list-container">
-      <h2>Upcoming Events</h2>
+    <div className="events-list-container" ref={containerRef}>
+      <div className="events-list-header">
+        <h2>Upcoming Events</h2>
+        <EventExport events={upcomingEvents} containerRef={containerRef} />
+      </div>
       <div className="events-list">
-        {upcomingEvents.map((event) => (
+        {upcomingEvents.map((event) => {
+          // Pre-compute formatted dates to avoid multiple moment() calls
+          const startMoment = moment(event.start);
+          const month = startMoment.format('MMM');
+          const day = startMoment.format('D');
+          const formattedDate = formatDate(event.start);
+          const formattedStartTime = formatTime(event.start);
+          const formattedEndTime = event.end ? formatTime(event.end) : null;
+          
+          return (
           <div key={event.id} className="event-card">
             <div className="event-date">
-              <div className="event-month">{moment(event.start).format('MMM')}</div>
-              <div className="event-day">{moment(event.start).format('D')}</div>
+              <div className="event-month">{month}</div>
+              <div className="event-day">{day}</div>
             </div>
             <div className="event-details">
               <h3 className="event-title">{event.title}</h3>
               <div className="event-info">
                 <div className="event-time">
                   <span className="info-icon">🕐</span>
-                  {formatDate(event.start)} • {formatTime(event.start)}
-                  {event.end && ` - ${formatTime(event.end)}`}
+                  {formattedDate} • {formattedStartTime}
+                  {formattedEndTime && ` - ${formattedEndTime}`}
                 </div>
                 {event.location && (
                   <div className="event-location">
@@ -198,10 +220,7 @@ const EventsList = ({ events, onEventUpdate }) => {
                     )}
                   </button>
                   <button
-                    onClick={() => {
-                      trackEventEdit(event.id, event.title, isAdmin);
-                      setEditingEvent(event);
-                    }}
+                    onClick={() => handleEditClick(event)}
                     className="edit-event-btn"
                     title={isAdmin ? "Edit event" : "Request event edit"}
                   >
@@ -211,7 +230,8 @@ const EventsList = ({ events, onEventUpdate }) => {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
       
       {editingEvent && (
