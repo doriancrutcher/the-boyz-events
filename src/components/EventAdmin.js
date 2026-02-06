@@ -145,29 +145,25 @@ const EventAdmin = ({ events, onUpdate }) => {
         metadata.flyerUrl = finalFlyerUrl;
       }
 
-      const success = await setEventMetadata(selectedEventId, metadata);
+      await setEventMetadata(selectedEventId, metadata);
       
-      if (success) {
-        setMessage('Event metadata saved successfully!');
-        if (onUpdate) {
-          onUpdate();
-        }
-        // Clear form after a delay
-        setTimeout(() => {
-          setMessage('');
-          setChatUrl('');
-          setPartifulLink('');
-          setInstagramHandle('');
-          setEventOwner('');
-          setFlyerImage(null);
-          setFlyerPreview(existingFlyerUrl);
-        }, 2000);
-      } else {
-        setMessage('Failed to save event metadata');
+      setMessage('Event metadata saved successfully!');
+      if (onUpdate) {
+        onUpdate();
       }
+      // Clear form after a delay
+      setTimeout(() => {
+        setMessage('');
+        setChatUrl('');
+        setPartifulLink('');
+        setInstagramHandle('');
+        setEventOwner('');
+        setFlyerImage(null);
+        setFlyerPreview(existingFlyerUrl);
+      }, 2000);
     } catch (error) {
       console.error('Error saving metadata:', error);
-      setMessage('Error saving event metadata');
+      setMessage('Error saving event metadata: ' + (error.message || 'Unknown error. Please check Firestore permissions.'));
     } finally {
       setLoading(false);
     }
