@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getPendingRequests, updateRequestStatus } from '../services/eventRequestService';
 import { getPendingEdits, updateEditStatus } from '../services/eventEditService';
-import { getPendingApprovedEvents, markAsAddedToCalendar, deleteApprovedEvent } from '../services/approvedEventsService';
+import { getPendingApprovedEvents, markAsAddedToCalendar } from '../services/approvedEventsService';
 import { trackEventRequestApproval, trackEditRequestDecision, trackAdminAction } from '../services/analyticsService';
 import './AdminDashboard.css';
 
