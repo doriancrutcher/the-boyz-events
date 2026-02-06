@@ -1,12 +1,12 @@
 .flyer-image-wrapper {
   position: relative;
   width: 100%;
+  display: block;
 }
 
 .flyer-image-wrapper .flyer-image {
   width: 100%;
   height: auto;
-  border-radius: 8px;
   display: block;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -24,11 +24,5 @@
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.9em;
   pointer-events: none;
-}
-
-/* Ensure wrapper doesn't break existing styles */
-.flyer-image-wrapper.event-flyer-image,
-.flyer-image-wrapper.flyer-image,
-.flyer-image-wrapper.modal-flyer {
-  margin-top: 8px;
+  z-index: 1;
 }

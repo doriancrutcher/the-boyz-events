@@ -23,14 +23,14 @@ const FlyerImage = ({ src, alt, className = '', ...props }) => {
   };
 
   return (
-    <div className={`flyer-image-wrapper ${className}`}>
+    <div className="flyer-image-wrapper">
       {!imageLoaded && (
         <div className="flyer-loading">Loading image...</div>
       )}
       <img
         src={src}
         alt={alt || 'Event flyer'}
-        className={`flyer-image ${imageLoaded ? 'loaded' : ''}`}
+        className={`flyer-image ${imageLoaded ? 'loaded' : ''} ${className}`}
         onError={handleError}
         onLoad={handleLoad}
         {...props}
