@@ -6,6 +6,7 @@ import {
   getDocs, 
   doc, 
   updateDoc,
+  setDoc,
   getDoc,
   Timestamp
 } from 'firebase/firestore';
@@ -84,7 +85,8 @@ export const applyEditDirectly = async (eventId, editData) => {
       metadata.ownerInstagram = cleanHandle ? `https://instagram.com/${cleanHandle}` : null;
     }
     
-    await updateDoc(eventRef, {
+    // Use setDoc with merge to create document if it doesn't exist
+    await setDoc(eventRef, {
       ...metadata,
       updatedAt: Timestamp.now()
     }, { merge: true });
@@ -162,7 +164,8 @@ export const updateEditStatus = async (editId, status, adminNotes = '') => {
       metadata.ownerInstagram = cleanHandle ? `https://instagram.com/${cleanHandle}` : null;
     }
     
-    await updateDoc(eventRef, {
+    // Use setDoc with merge to create document if it doesn't exist
+    await setDoc(eventRef, {
       ...metadata,
       updatedAt: Timestamp.now()
     }, { merge: true });
