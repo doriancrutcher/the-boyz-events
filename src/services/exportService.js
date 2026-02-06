@@ -249,11 +249,20 @@ export const exportEventsToImage = async (events, dateRange = null, containerEle
  */
 export const getDateRanges = () => {
   const today = moment().startOf('day');
-  let thisWeekend = moment().day(6); // Saturday
-  if (thisWeekend.isBefore(today)) {
-    thisWeekend = thisWeekend.add(1, 'week');
+  const currentDay = today.day(); // 0 = Sunday, 6 = Saturday
+  
+  // Calculate this weekend (Saturday to Sunday)
+  let thisWeekendSaturday = moment().day(6); // Get Saturday of current week
+  if (thisWeekendSaturday.isBefore(today)) {
+    // If Saturday has passed, get next Saturday
+    thisWeekendSaturday = thisWeekendSaturday.add(1, 'week');
   }
-  const nextWeekend = moment(thisWeekend).add(1, 'week');
+  // Sunday is the day after Saturday
+  const thisWeekendSunday = thisWeekendSaturday.clone().add(1, 'day');
+  
+  // Next weekend is 7 days after this weekend
+  const nextWeekendSaturday = thisWeekendSaturday.clone().add(1, 'week');
+  const nextWeekendSunday = nextWeekendSaturday.clone().add(1, 'day');
 
   return {
     today: {
@@ -263,13 +272,13 @@ export const getDateRanges = () => {
     },
     thisWeekend: {
       label: 'This Weekend',
-      start: thisWeekend.startOf('day').toDate(),
-      end: thisWeekend.clone().day(0).endOf('day').toDate() // Sunday
+      start: thisWeekendSaturday.startOf('day').toDate(),
+      end: thisWeekendSunday.endOf('day').toDate()
     },
     nextWeekend: {
       label: 'Next Weekend',
-      start: nextWeekend.startOf('day').toDate(),
-      end: nextWeekend.clone().day(0).endOf('day').toDate()
+      start: nextWeekendSaturday.startOf('day').toDate(),
+      end: nextWeekendSunday.endOf('day').toDate()
     },
     thisWeek: {
       label: 'This Week',
