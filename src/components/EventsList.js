@@ -13,6 +13,7 @@ const EventsList = ({ events, onEventUpdate }) => {
   const [goingStatus, setGoingStatus] = useState({});
   const [goingCounts, setGoingCounts] = useState({});
   const [updatingGoing, setUpdatingGoing] = useState({});
+  const [showExportModal, setShowExportModal] = useState(false);
   const containerRef = useRef(null);
   
   // Memoize filtered events to prevent recalculation on every render
@@ -108,7 +109,13 @@ const EventsList = ({ events, onEventUpdate }) => {
     <div className="events-list-container" ref={containerRef}>
       <div className="events-list-header">
         <h2>Upcoming Events</h2>
-        <EventExport events={upcomingEvents} containerRef={containerRef} />
+        <button
+          onClick={() => setShowExportModal(true)}
+          className="export-trigger-btn"
+          title="Export events to PDF or image"
+        >
+          📥 Export Events
+        </button>
       </div>
       <div className="events-list">
         {upcomingEvents.map((event) => {
@@ -241,6 +248,13 @@ const EventsList = ({ events, onEventUpdate }) => {
           onSuccess={onEventUpdate}
         />
       )}
+
+      <EventExport
+        events={upcomingEvents}
+        containerRef={containerRef}
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+      />
     </div>
   );
 };

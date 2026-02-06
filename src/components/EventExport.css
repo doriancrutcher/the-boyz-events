@@ -1,36 +1,104 @@
-.event-export-container {
+.event-export-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.event-export-modal {
   background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 20px;
-  margin: 20px 0;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .export-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 24px 24px 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .export-header h3 {
   margin: 0;
   color: #fff;
-  font-size: 1.3em;
+  font-size: 1.5em;
   font-weight: 600;
 }
 
-.event-count {
+.close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.export-content {
+  padding: 24px;
+}
+
+.event-count-badge {
   background: rgba(138, 43, 226, 0.3);
   border: 1px solid rgba(138, 43, 226, 0.4);
   color: #bb86fc;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.9em;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 1em;
   font-weight: 600;
+  text-align: center;
+  margin-bottom: 24px;
 }
 
 .date-range-selector {
@@ -187,15 +255,17 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .event-export-container {
-    padding: 15px;
-    margin: 15px 0;
+  .event-export-modal {
+    max-width: 100%;
+    margin: 10px;
+  }
+
+  .export-content {
+    padding: 20px;
   }
 
   .export-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    padding: 20px 20px 16px 20px;
   }
 
   .custom-range-inputs {

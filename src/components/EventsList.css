@@ -13,6 +13,40 @@
   gap: 20px;
 }
 
+.export-trigger-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.3) 0%, rgba(138, 43, 226, 0.2) 100%);
+  border: 1px solid rgba(138, 43, 226, 0.4);
+  border-radius: 8px;
+  color: #bb86fc;
+  font-weight: 600;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 2px 10px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.export-trigger-btn:hover {
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.5) 0%, rgba(138, 43, 226, 0.3) 100%);
+  border-color: rgba(138, 43, 226, 0.6);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(138, 43, 226, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .export-trigger-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.9em;
+  }
+}
+
 .events-list-container h2 {
   color: #ffffff;
   margin: 0;
