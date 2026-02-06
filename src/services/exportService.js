@@ -249,7 +249,6 @@ export const exportEventsToImage = async (events, dateRange = null, containerEle
  */
 export const getDateRanges = () => {
   const today = moment().startOf('day');
-  const currentDay = today.day(); // 0 = Sunday, 6 = Saturday
   
   // Calculate this weekend (Friday to Sunday)
   let thisWeekendFriday = moment().day(5); // Get Friday of current week (5 = Friday)
