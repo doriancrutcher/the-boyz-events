@@ -53,14 +53,20 @@ export const getAllEventMetadata = async () => {
 export const setEventMetadata = async (eventId, metadata) => {
   try {
     const eventRef = doc(db, EVENTS_METADATA_COLLECTION, eventId);
-    await setDoc(eventRef, {
+    
+    // Ensure we always have at least updatedAt, even if metadata is empty
+    const dataToSave = {
       ...metadata,
       updatedAt: new Date().toISOString()
-    }, { merge: true });
+    };
+    
+    // Use setDoc with merge: true to create or update
+    await setDoc(eventRef, dataToSave, { merge: true });
     return true;
   } catch (error) {
     console.error('Error setting event metadata:', error);
-    return false;
+    // Re-throw the error so the caller can handle it
+    throw error;
   }
 };
 
