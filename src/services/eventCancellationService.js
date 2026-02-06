@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { notifyEventCancelled } from './eventGoingService';
 
@@ -10,12 +10,13 @@ const EVENTS_METADATA_COLLECTION = 'events';
 export const cancelEvent = async (eventId, eventTitle) => {
   try {
     // Mark event as cancelled in metadata
+    // Use setDoc with merge to create document if it doesn't exist
     const eventRef = doc(db, EVENTS_METADATA_COLLECTION, eventId);
-    await updateDoc(eventRef, {
+    await setDoc(eventRef, {
       cancelled: true,
       cancelledAt: Timestamp.now(),
       updatedAt: Timestamp.now()
-    });
+    }, { merge: true });
 
     // Notify all users who were going
     const notifiedCount = await notifyEventCancelled(eventId, eventTitle);
