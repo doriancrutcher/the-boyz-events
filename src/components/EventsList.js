@@ -3,6 +3,7 @@ import moment from 'moment';
 import { useAuth } from '../contexts/AuthContext';
 import EditEventForm from './EditEventForm';
 import EventExport from './EventExport';
+import FlyerImage from './FlyerImage';
 import { toggleGoingStatus, getGoingCountsForEvents, getGoingStatusForEvents } from '../services/eventGoingService';
 import { trackEventGoing, trackEventEdit } from '../services/analyticsService';
 import './EventsList.css';
@@ -196,7 +197,7 @@ const EventsList = ({ events, onEventUpdate }) => {
                 )}
                 {event.flyerUrl && (
                   <div className="event-flyer">
-                    <img 
+                    <FlyerImage 
                       src={event.flyerUrl} 
                       alt={`Flyer for ${event.title}`}
                       className="event-flyer-image"

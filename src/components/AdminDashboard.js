@@ -3,6 +3,7 @@ import { getPendingRequests, updateRequestStatus } from '../services/eventReques
 import { getPendingEdits, updateEditStatus } from '../services/eventEditService';
 import { getPendingApprovedEvents, markAsAddedToCalendar } from '../services/approvedEventsService';
 import { trackEventRequestApproval, trackEditRequestDecision, trackAdminAction } from '../services/analyticsService';
+import FlyerImage from './FlyerImage';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -252,7 +253,7 @@ const AdminDashboard = () => {
                 {request.flyerUrl && (
                   <div className="detail-row">
                     <strong>Flyer:</strong>
-                    <img src={request.flyerUrl} alt="Event flyer" className="flyer-image" />
+                    <FlyerImage src={request.flyerUrl} alt="Event flyer" className="flyer-image" />
                   </div>
                 )}
                 <div className="detail-row">
@@ -284,7 +285,7 @@ const AdminDashboard = () => {
               {selectedRequest.flyerUrl && (
                 <div>
                   <strong>Flyer:</strong>
-                  <img src={selectedRequest.flyerUrl} alt="Flyer" className="modal-flyer" />
+                  <FlyerImage src={selectedRequest.flyerUrl} alt="Flyer" className="modal-flyer" />
                 </div>
               )}
             </div>
@@ -521,7 +522,7 @@ const AdminDashboard = () => {
                     {event.flyerUrl && (
                       <div className="detail-row">
                         <strong>Flyer:</strong>
-                        <img src={event.flyerUrl} alt="Event flyer" className="flyer-image" />
+                        <FlyerImage src={event.flyerUrl} alt="Event flyer" className="flyer-image" />
                       </div>
                     )}
                     <div className="detail-row">
