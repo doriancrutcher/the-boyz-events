@@ -15,6 +15,8 @@ const EventAdmin = ({ events, onUpdate }) => {
   const [instagramHandle, setInstagramHandle] = useState('');
   const [eventOwner, setEventOwner] = useState('');
   const [flyerImage, setFlyerImage] = useState(null);
+  const [flyerType, setFlyerType] = useState('file'); // 'file' or 'url'
+  const [flyerUrl, setFlyerUrl] = useState('');
   const [flyerPreview, setFlyerPreview] = useState(null);
   const [existingFlyerUrl, setExistingFlyerUrl] = useState(null);
   const [uploadingFlyer, setUploadingFlyer] = useState(false);
@@ -36,8 +38,10 @@ const EventAdmin = ({ events, onUpdate }) => {
       setInstagramHandle(metadata.instaHandle || metadata.instagramHandle || '');
       setEventOwner(metadata.eventOwner || '');
       setExistingFlyerUrl(metadata.flyerUrl || null);
+      setFlyerUrl(metadata.flyerUrl || '');
       setFlyerPreview(metadata.flyerUrl || null);
       setFlyerImage(null);
+      setFlyerType('file');
     } catch (error) {
       console.error('Error loading metadata:', error);
     }
@@ -51,6 +55,7 @@ const EventAdmin = ({ events, onUpdate }) => {
         return;
       }
       setFlyerImage(file);
+      setFlyerUrl(''); // Clear URL when file is selected
       
       // Create preview
       const reader = new FileReader();
@@ -59,6 +64,25 @@ const EventAdmin = ({ events, onUpdate }) => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleFlyerUrlChange = (e) => {
+    const url = e.target.value;
+    setFlyerUrl(url);
+    setFlyerImage(null); // Clear file when URL is entered
+    setFlyerPreview(url || null);
+  };
+
+  const handleFlyerTypeChange = (type) => {
+    setFlyerType(type);
+    if (type === 'url') {
+      setFlyerUrl(existingFlyerUrl || '');
+      setFlyerPreview(existingFlyerUrl || null);
+    } else {
+      setFlyerUrl('');
+      setFlyerPreview(existingFlyerUrl || null);
+    }
+    setFlyerImage(null);
   };
 
   const uploadFlyer = async (file, eventId) => {
@@ -81,12 +105,17 @@ const EventAdmin = ({ events, onUpdate }) => {
     setMessage('');
 
     try {
-      // Upload flyer if a new one was selected
-      let flyerUrl = existingFlyerUrl;
-      if (flyerImage) {
+      // Handle flyer: either upload file or use provided URL
+      let finalFlyerUrl = existingFlyerUrl;
+      
+      if (flyerType === 'url' && flyerUrl.trim()) {
+        // Use URL directly
+        finalFlyerUrl = flyerUrl.trim();
+      } else if (flyerImage) {
+        // Upload file
         setUploadingFlyer(true);
         try {
-          flyerUrl = await uploadFlyer(flyerImage, selectedEventId);
+          finalFlyerUrl = await uploadFlyer(flyerImage, selectedEventId);
         } catch (error) {
           console.error('Error uploading flyer:', error);
           setMessage('Error uploading flyer image');
@@ -112,8 +141,8 @@ const EventAdmin = ({ events, onUpdate }) => {
       } else if (eventOwner.trim()) {
         metadata.eventOwner = eventOwner.trim();
       }
-      if (flyerUrl) {
-        metadata.flyerUrl = flyerUrl;
+      if (finalFlyerUrl) {
+        metadata.flyerUrl = finalFlyerUrl;
       }
 
       const success = await setEventMetadata(selectedEventId, metadata);
@@ -273,20 +302,59 @@ const EventAdmin = ({ events, onUpdate }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="flyer-image">Event Flyer Image:</label>
-              <input
-                id="flyer-image"
-                type="file"
-                accept="image/*"
-                onChange={handleFlyerChange}
-                className="form-input"
-              />
+              <label>Event Flyer Image:</label>
+              <div className="flyer-type-selector">
+                <button
+                  type="button"
+                  onClick={() => handleFlyerTypeChange('file')}
+                  className={`flyer-type-btn ${flyerType === 'file' ? 'active' : ''}`}
+                >
+                  Upload File
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFlyerTypeChange('url')}
+                  className={`flyer-type-btn ${flyerType === 'url' ? 'active' : ''}`}
+                >
+                  Paste URL
+                </button>
+              </div>
+              
+              {flyerType === 'file' ? (
+                <input
+                  id="flyer-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFlyerChange}
+                  className="form-input"
+                />
+              ) : (
+                <input
+                  type="url"
+                  value={flyerUrl}
+                  onChange={handleFlyerUrlChange}
+                  placeholder="https://example.com/image.jpg"
+                  className="form-input"
+                />
+              )}
+              
               {flyerPreview && (
                 <div className="flyer-preview">
                   <img src={flyerPreview} alt="Flyer preview" className="flyer-preview-image" />
                   {existingFlyerUrl && flyerPreview === existingFlyerUrl && (
                     <p className="flyer-info">Current flyer</p>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFlyerPreview(null);
+                      setFlyerImage(null);
+                      setFlyerUrl('');
+                    }}
+                    className="remove-image-btn"
+                  >
+                    Remove
+                  </button>
                 </div>
               )}
             </div>

@@ -14,6 +14,8 @@ const EventRequestForm = () => {
     location: '',
     flyerImage: null
   });
+  const [flyerType, setFlyerType] = useState('file'); // 'file' or 'url'
+  const [flyerUrl, setFlyerUrl] = useState('');
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +51,7 @@ const EventRequestForm = () => {
         ...prev,
         flyerImage: file
       }));
+      setFlyerUrl(''); // Clear URL when file is selected
       
       // Create preview
       const reader = new FileReader();
@@ -57,6 +60,20 @@ const EventRequestForm = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleFlyerUrlChange = (e) => {
+    const url = e.target.value;
+    setFlyerUrl(url);
+    setFormData(prev => ({ ...prev, flyerImage: null })); // Clear file when URL is entered
+    setPreview(url || null);
+  };
+
+  const handleFlyerTypeChange = (type) => {
+    setFlyerType(type);
+    setFlyerUrl('');
+    setFormData(prev => ({ ...prev, flyerImage: null }));
+    setPreview(null);
   };
 
   const handleSubmit = async (e) => {
@@ -73,10 +90,16 @@ const EventRequestForm = () => {
         throw new Error('Event date is required');
       }
 
-      await submitEventRequest(formData, currentUser.uid, currentUser.email);
+      // Prepare request data with flyer URL or image
+      const requestData = {
+        ...formData,
+        flyerUrl: flyerType === 'url' && flyerUrl.trim() ? flyerUrl.trim() : null
+      };
+      
+      await submitEventRequest(requestData, currentUser.uid, currentUser.email);
       
       // Track analytics
-      trackEventRequest(!!formData.flyerImage);
+      trackEventRequest(!!(formData.flyerImage || (flyerType === 'url' && flyerUrl.trim())));
       
       setSuccess('Event request submitted successfully! The admin will review it and you\'ll be notified.');
       setFormData({
@@ -190,15 +213,45 @@ const EventRequestForm = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="flyerImage">Event Flyer (Optional)</label>
-          <input
-            id="flyerImage"
-            type="file"
-            name="flyerImage"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="form-input-file"
-          />
+          <label>Event Flyer (Optional)</label>
+          <div className="flyer-type-selector">
+            <button
+              type="button"
+              onClick={() => handleFlyerTypeChange('file')}
+              className={`flyer-type-btn ${flyerType === 'file' ? 'active' : ''}`}
+            >
+              Upload File
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFlyerTypeChange('url')}
+              className={`flyer-type-btn ${flyerType === 'url' ? 'active' : ''}`}
+            >
+              Paste URL
+            </button>
+          </div>
+          
+          {flyerType === 'file' ? (
+            <>
+              <input
+                id="flyerImage"
+                type="file"
+                name="flyerImage"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="form-input-file"
+              />
+            </>
+          ) : (
+            <input
+              type="url"
+              value={flyerUrl}
+              onChange={handleFlyerUrlChange}
+              placeholder="https://example.com/image.jpg"
+              className="form-input"
+            />
+          )}
+          
           {preview && (
             <div className="image-preview">
               <img src={preview} alt="Flyer preview" />
@@ -207,6 +260,7 @@ const EventRequestForm = () => {
                 onClick={() => {
                   setPreview(null);
                   setFormData(prev => ({ ...prev, flyerImage: null }));
+                  setFlyerUrl('');
                 }}
                 className="remove-image-btn"
               >

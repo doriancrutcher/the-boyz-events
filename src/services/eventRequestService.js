@@ -62,9 +62,13 @@ export const submitEventRequest = async (requestData, userId, userEmail) => {
       throw new Error(`You've reached the daily limit of ${MAX_REQUESTS_PER_DAY} event requests. Please try again tomorrow.`);
     }
 
-    // Upload flyer if provided
+    // Handle flyer: either upload file or use provided URL
     let flyerUrl = null;
-    if (requestData.flyerImage) {
+    if (requestData.flyerUrl) {
+      // Use provided URL directly
+      flyerUrl = requestData.flyerUrl;
+    } else if (requestData.flyerImage) {
+      // Upload file
       flyerUrl = await uploadFlyerImage(requestData.flyerImage, userId);
     }
 

@@ -18,6 +18,8 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
     eventOwner: event.eventOwner || ''
   });
   const [flyerImage, setFlyerImage] = useState(null);
+  const [flyerType, setFlyerType] = useState('file'); // 'file' or 'url'
+  const [flyerUrl, setFlyerUrl] = useState(event.flyerUrl || '');
   const [flyerPreview, setFlyerPreview] = useState(event.flyerUrl || null);
   const [uploadingFlyer, setUploadingFlyer] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,6 +42,7 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
         return;
       }
       setFlyerImage(file);
+      setFlyerUrl(''); // Clear URL when file is selected
       
       // Create preview
       const reader = new FileReader();
@@ -48,6 +51,25 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleFlyerUrlChange = (e) => {
+    const url = e.target.value;
+    setFlyerUrl(url);
+    setFlyerImage(null); // Clear file when URL is entered
+    setFlyerPreview(url || null);
+  };
+
+  const handleFlyerTypeChange = (type) => {
+    setFlyerType(type);
+    if (type === 'url') {
+      setFlyerUrl(event.flyerUrl || '');
+      setFlyerPreview(event.flyerUrl || null);
+    } else {
+      setFlyerUrl('');
+      setFlyerPreview(event.flyerUrl || null);
+    }
+    setFlyerImage(null);
   };
 
   const uploadFlyer = async (file, eventId) => {
@@ -66,12 +88,17 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      // Upload flyer if a new one was selected
-      let flyerUrl = event.flyerUrl || null;
-      if (flyerImage) {
+      // Handle flyer: either upload file or use provided URL
+      let finalFlyerUrl = event.flyerUrl || null;
+      
+      if (flyerType === 'url' && flyerUrl.trim()) {
+        // Use URL directly
+        finalFlyerUrl = flyerUrl.trim();
+      } else if (flyerImage) {
+        // Upload file
         setUploadingFlyer(true);
         try {
-          flyerUrl = await uploadFlyer(flyerImage, event.id);
+          finalFlyerUrl = await uploadFlyer(flyerImage, event.id);
         } catch (error) {
           console.error('Error uploading flyer:', error);
           setError('Error uploading flyer image');
@@ -84,7 +111,7 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
 
       const editData = {
         ...formData,
-        flyerUrl: flyerUrl
+        flyerUrl: finalFlyerUrl
       };
 
       if (isAdmin) {
@@ -224,20 +251,59 @@ const EditEventForm = ({ event, onClose, onSuccess }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="flyer-image">Event Flyer Image</label>
-            <input
-              id="flyer-image"
-              type="file"
-              accept="image/*"
-              onChange={handleFlyerChange}
-              className="form-input"
-            />
+            <label>Event Flyer Image</label>
+            <div className="flyer-type-selector">
+              <button
+                type="button"
+                onClick={() => handleFlyerTypeChange('file')}
+                className={`flyer-type-btn ${flyerType === 'file' ? 'active' : ''}`}
+              >
+                Upload File
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFlyerTypeChange('url')}
+                className={`flyer-type-btn ${flyerType === 'url' ? 'active' : ''}`}
+              >
+                Paste URL
+              </button>
+            </div>
+            
+            {flyerType === 'file' ? (
+              <input
+                id="flyer-image"
+                type="file"
+                accept="image/*"
+                onChange={handleFlyerChange}
+                className="form-input"
+              />
+            ) : (
+              <input
+                type="url"
+                value={flyerUrl}
+                onChange={handleFlyerUrlChange}
+                placeholder="https://example.com/image.jpg"
+                className="form-input"
+              />
+            )}
+            
             {flyerPreview && (
               <div className="flyer-preview">
                 <img src={flyerPreview} alt="Flyer preview" className="flyer-preview-image" />
                 {event.flyerUrl && flyerPreview === event.flyerUrl && (
                   <p className="flyer-info">Current flyer</p>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFlyerPreview(null);
+                    setFlyerImage(null);
+                    setFlyerUrl('');
+                  }}
+                  className="remove-image-btn"
+                >
+                  Remove
+                </button>
               </div>
             )}
           </div>
